@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="matrix3D.cpp">
+      <Filter>triviality_geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="vector3D.cpp">
+      <Filter>triviality_geometry</Filter>
+    </ClCompile>
+    <ClCompile Include="test.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
+    <ClCompile Include="solver_GDE.cpp">
+      <Filter>GDE</Filter>
+    </ClCompile>
+    <ClCompile Include="matrix.cpp">
+      <Filter>container</Filter>
+    </ClCompile>
+    <ClCompile Include="solver_VCSP_GDE.cpp">
+      <Filter>VCSP_GDE</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="matrix3D.h">
+      <Filter>triviality_geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="vector3D.h">
+      <Filter>triviality_geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="test.h">
+      <Filter>test</Filter>
+    </ClInclude>
+    <ClInclude Include="solver_GDE.h">
+      <Filter>GDE</Filter>
+    </ClInclude>
+    <ClInclude Include="matrix.h">
+      <Filter>container</Filter>
+    </ClInclude>
+    <ClInclude Include="solver_VCSP_GDE.h">
+      <Filter>VCSP_GDE</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="triviality_geometry">
+      <UniqueIdentifier>{1dc8ef07-0925-4419-9cde-5fd77f85e97a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="test">
+      <UniqueIdentifier>{da9fd3ab-9a01-4ed5-9e0e-556388d317ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GDE">
+      <UniqueIdentifier>{32b2f2cc-ddc0-4559-9b36-2e4a4555e3ab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="container">
+      <UniqueIdentifier>{105c1199-69e4-4518-a2a4-b2df24186302}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="VCSP_GDE">
+      <UniqueIdentifier>{a2f30008-0f1b-4fb1-94a6-df6eafcd6689}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
