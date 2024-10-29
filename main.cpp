@@ -54,15 +54,12 @@ int main()
 	
 
 	//	Функция попреречного сечения трубы
-	std::vector<double> S(expanse_grid.nodes);
 	const double pos_bottleneck = 0.5;
 	const double value_bottleneck = 0.5;
-
-	for (size_t i = 0; i < expanse_grid.nodes; ++i)
-	{
-		const double part = (1 - i * expanse_grid.h / pos_bottleneck);
-		S[i] = value_bottleneck + (1 - value_bottleneck) * part * part;
-	}
+	std::function<double(double)> S_func = [pos_bottleneck, value_bottleneck] (double arg) {
+		const double part = (1 - arg / pos_bottleneck);
+		return value_bottleneck + (1 - value_bottleneck) * part * part;
+		};
 
 	//	Начальный условия
 	StartCondition start_condition;
@@ -80,13 +77,13 @@ int main()
 	borderline_condition.end_borderline_p = std::function<double(double)>([](double arg) { return 0.8018469; });
 
 	//	Моделирование ударной трубы
-	VariableCrossSectionPipeGDE solver(expanse_grid, time_grid, start_condition, borderline_condition, S);
+	VariableCrossSectionPipeGDE solver(expanse_grid, time_grid, start_condition, borderline_condition, S_func);
 	solver.solving();
 
 	//	Запись результатов в файл 
-	//solver.writeRO(file_path_ro);
-	//solver.writeU(file_path_u);
-	//solver.writeP(file_path_p);
+	solver.writeRO(file_path_ro);
+	solver.writeU(file_path_u);
+	solver.writeP(file_path_p);
 	
 	////	Тестирование некоторых функций
 	//TEST_all();

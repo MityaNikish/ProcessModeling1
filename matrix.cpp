@@ -61,132 +61,23 @@ Matrix& Matrix::operator=(Matrix&& other) noexcept
 	return *this;
 }
 
-
-const Matrix Matrix::operator+(const Matrix& other) const
-{
-	Matrix result(*this);
-
-	if (this->row_ != other.row_ || this->col_ != other.col_)
-	{
-		throw "Исключение: Размерности матриц не совпадают.";
-	}
-
-	for (size_t i = 0; i < row_; ++i)
-	{
-		for (size_t j = 0; j < col_; ++j)
-		{
-			result.getElement(i, j) += other.getElement(i, j);
-		}
-	}
-
-	return result;
-}
-
-void Matrix::operator+=(const Matrix& other)
-{
-	*this = *this + other;
-}
-
-
-const Matrix Matrix::operator-(const Matrix& other) const
-{
-	return Matrix(*this + -other);
-}
-
-void Matrix::operator-=(const Matrix& other)
-{
-	*this = *this - other;
-}
-
-
-const Matrix Matrix::operator-() const noexcept
-{
-	Matrix result(*this);
-
-	for (size_t i = 0; i < row_; ++i)
-	{
-		for (size_t j = 0; j < col_; ++j)
-		{
-			result.getElement(i, j) = -this->getElement(i, j);
-		}
-	}
-
-	return result;
-}
-
-
-
-const Matrix Matrix::operator*(const Matrix& other) const
-{
-	Matrix result(this->row_, other.col_);
-
-	if (this->row_ != other.col_ || this->col_ != other.row_)
-	{
-		throw "Исключение: Размерности матриц не совпадают.";
-	}
-
-	for (size_t i = 0; i < row_; ++i)
-	{
-		for (size_t j_ = 0; j_ < other.col_; ++j_)
-		{
-			double value = 0;
-			for (size_t j = 0; j < col_; ++j)
-			{
-				value += this->getElement(i, j) * other.getElement(j, j_);
-			}
-			result.getElement(i, j_) = value;
-		}
-	}
-
-	return result;
-}
-
-const Matrix Matrix::operator*(const double arg) const noexcept
-{
-	Matrix result(*this);
-
-	for (size_t i = 0; i < row_; ++i)
-	{
-		for (size_t j = 0; j < col_; ++j)
-		{
-			result.getElement(i, j) *= arg;
-		}
-	}
-
-	return result;
-}
-
-
-void Matrix::operator*=(const double arg)
-{
-	*this = *this * arg;
-}
-
-
 Matrix Matrix::operator[](const size_t index) const
 {
 	return this->getCut(index, index + 1, 0, col_);
 }
 
-Matrix Matrix::operator()(const Matrix& other) const
+Matrix& Matrix::operator()(const std::function<double(double)>& func)
 {
-	Matrix result(row_, 1);
-
-	if (this->row_ != other.col_ || other.col_ != 1)
-	{
-		throw "Исключение: Размерности матриц не совпадают.";
-	}
-
 	for (size_t i = 0; i < row_; ++i)
 	{
 		for (size_t j = 0; j < col_; ++j)
 		{
-			result.getElement(i, j) *= other.getElement(j, 0);
+			getElement(i, j) = func(const_cast<const double&>(getElement(i, j)));
 		}
 	}
-
-	return result;
+	return *this;
 }
+
 
 bool Matrix::operator==(const Matrix& other) const noexcept
 {
@@ -216,13 +107,17 @@ size_t Matrix::getQuantityCal(void) const noexcept
 	return col_;
 }
 
-double& Matrix::getElement(size_t index_row, size_t index_col) const
+double& Matrix::getElement(int index_row, int index_col) const
 {
-	if (index_row >= row_ || index_col >= col_)
-	{
-		throw "Исключение: Обращение к не существующему элементу";
-	}
-	return ptr_[index_row * col_ + index_col];
+	size_t relative_index_row = index_row < 0 ? row_ - 1 - index_row % row_ : index_row % row_;
+	size_t relative_index_col = index_col < 0 ? col_ - 1 - index_col % col_ : index_col % col_;
+
+	//if (index_row >= row_ || index_col >= col_)
+	//{
+	//	throw "Исключение: Обращение к не существующему элементу";
+	//}
+
+	return ptr_[relative_index_row * col_ + relative_index_col];
 }
 
 Matrix Matrix::getCut(size_t begin_index_row, size_t end_index_row, size_t begin_index_col, size_t end_index_col) const

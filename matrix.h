@@ -1,4 +1,5 @@
 ﻿#pragma once
+#include <functional>
 
 class Matrix
 {
@@ -17,25 +18,14 @@ public:
 	Matrix& operator=(const Matrix& other);
 	Matrix& operator=(Matrix&& other) noexcept;
 
-	const Matrix operator+(const Matrix& other) const;
-	void operator+=(const Matrix& other);
-	const Matrix operator-(const Matrix& other) const;
-	void operator-=(const Matrix& other);
-
-	const Matrix operator-() const noexcept;
-
-	const Matrix operator*(const Matrix& other) const;
-	const Matrix operator*(const double arg) const noexcept;
-	void operator*=(const double arg);
-
 	Matrix operator[](const size_t index) const;
-	Matrix operator()(const Matrix& other) const;
+	Matrix& operator()(const std::function<double(double)>& func);
 
 	bool operator==(const Matrix& other) const noexcept;
 
 	size_t getQuantityRow(void) const noexcept;
 	size_t getQuantityCal(void) const noexcept;
-	double& getElement(size_t index_row, size_t index_col) const;
+	double& getElement(int index_row, int index_col) const;
 	Matrix getCut(size_t begin_index_row, size_t end_index_row, size_t begin_index_col, size_t end_index_col) const;
 	double* getData(void) const;
 };

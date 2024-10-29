@@ -19,12 +19,9 @@ GasDynamicsEquation::GasDynamicsEquation(const ExpanseGrid& expanse_grid, const 
 	_time_grid(time_grid),
 	_start_condition(std::move(start_condition)),
 	_borderline_condition(std::move(borderline_condition)),
-	_ro(_time_grid.nodes,
-	_expanse_grid.nodes),
-	_u(_time_grid.nodes,
-	_expanse_grid.nodes),
-	_p(_time_grid.nodes,
-	_expanse_grid.nodes),
+	_ro(2, _expanse_grid.nodes),
+	_u(2, _expanse_grid.nodes),
+	_p(2, _expanse_grid.nodes),
 	_alpha(_time_grid.tau / _expanse_grid.h)
 { }
 
@@ -40,6 +37,7 @@ void GasDynamicsEquation::solving()
 		for (size_t j = 1; j < _expanse_grid.nodes - 1; ++j)
 		{
 			Vector3D U_star = U_future(n, j);
+			//Vector3D U_star = dU(n, j);
 
 			const double ro_new = U_star[one];
 			const double u_new = U_star[two] / ro_new;
@@ -50,41 +48,7 @@ void GasDynamicsEquation::solving()
 			_u.getElement(n + 1, j) = u_new;
 			_p.getElement(n + 1, j) = p_new;
 
-			const double ro = _ro.getElement(n, j);
-
-			if (!not_satisfy_condition && (ro_new - ro) / (_time_grid.tau * ro) > 0.0001)
-			{
-				not_satisfy_condition = !not_satisfy_condition;
-			}
-		}
-		if (!not_satisfy_condition)
-		{
-			//std::cout << n << std::endl;
-			break;
-		}
-	}
-
-	/*
-	for (size_t n = 0; n < _time_grid.nodes - 1; ++n)
-	{
-		bool not_satisfy_condition = false;
-
-		for (size_t j = 2; j < _expanse_grid.nodes - 2; ++j)
-		{
-			Vector3D U_star = dU(n, j);
-
-			const double ro_new = U_star[one];
-			const double u_new = U_star[two] / ro_new;
-			const double E_new = U_star[three] / ro_new;
-			const double p_new = (E_new - u_new * u_new / 2) * ro_new * (_gamma - 1);
-
-			_ro.getElement(n + 1, j) = ro_new;
-			_u.getElement(n + 1, j) = u_new;
-			_p.getElement(n + 1, j) = p_new;
-
-			const double ro = _ro.getElement(n, j);
-
-			if (!not_satisfy_condition && (ro_new - ro) / (_time_grid.tau * ro) > 0.0001)
+			if (!not_satisfy_condition && !chekStopConditions(n, j, 1.0e-6))
 			{
 				not_satisfy_condition = !not_satisfy_condition;
 			}
@@ -95,7 +59,6 @@ void GasDynamicsEquation::solving()
 			break;
 		}
 	}
-	*/
 
 	postProcessing();
 }
@@ -104,19 +67,19 @@ void GasDynamicsEquation::solving()
 //	Запиывает данных плотности в файл
 void GasDynamicsEquation::writeRO(const std::filesystem::path& file_path)  const
 {
-	write(file_path, _ro.getData(), _time_grid.nodes * _expanse_grid.nodes);
+	write(file_path, _ro[0].getData(), _expanse_grid.nodes);
 }
 
 //	Запиывает данных скорости в файл
 void GasDynamicsEquation::writeU(const std::filesystem::path& file_path)  const
 {
-	write(file_path, _u.getData(), _time_grid.nodes * _expanse_grid.nodes);
+	write(file_path, _u[0].getData(), _expanse_grid.nodes);
 }
 
 //	Запиывает данных давления в файл
 void GasDynamicsEquation::writeP(const std::filesystem::path& file_path)  const
 {
-	write(file_path, _p.getData(), _time_grid.nodes * _expanse_grid.nodes);
+	write(file_path, _p[0].getData(), _expanse_grid.nodes);
 }
 
 
@@ -130,7 +93,7 @@ void GasDynamicsEquation::initConditions()
 		_p.getElement(0, j) = _start_condition.start_p(_expanse_grid.starting_point + _expanse_grid.h * static_cast<double>(j));
 	}
 
-	for (size_t n = 0; n < _time_grid.nodes; ++n)
+	for (size_t n = 0; n < 2; ++n)
 	{
 		_ro.getElement(n, 0) = _borderline_condition.start_borderline_ro(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
 		_u.getElement(n, 0) = _borderline_condition.start_borderline_u(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
@@ -146,6 +109,21 @@ void GasDynamicsEquation::initConditions()
 void GasDynamicsEquation::postProcessing()
 {
 	return;
+}
+
+
+//	Проверка на удовлетворение условий остановки вычислений
+bool GasDynamicsEquation::chekStopConditions(size_t n, size_t j, double eps)
+{
+	const double ro_ = _ro.getElement(n, j);
+	const double ro_next = _ro.getElement(n, j + 1);
+
+	const double u_ = _ro.getElement(n, j);
+	const double u_next = _ro.getElement(n, j + 1);
+
+	const double div = (ro_next * u_next - ro_ * u_) / _expanse_grid.h;
+
+	return abs(div) / ro_ < eps;
 }
 
 
