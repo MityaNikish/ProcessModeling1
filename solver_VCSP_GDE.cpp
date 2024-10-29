@@ -14,26 +14,6 @@ VariableCrossSectionPipeGDE::VariableCrossSectionPipeGDE(const ExpanseGrid& expa
 	: GasDynamicsEquation(expanse_grid, time_grid, start_condition, borderline_condition), _S(S)
 {
 	assert(_S.size() == expanse_grid.nodes && "The cross-section array is not of the right lenght!");
-
-	//GasDynamicsEquation::initConditions();
-
-	//const double ro = _ro.getElement(0, 0);
-	//const double u = _u.getElement(0, 0);
-	//const double p = _p.getElement(0, 0);
-
-	//double H_ = H(0, 0);
-	//
-	//double c_sqr = _gamma * p / ro;
-
-	//double A_1_0 = u * u / c_sqr;
-	//double A_1_1 = A_1_0 * (-2);
-	//double A_1_2 = 1 / c_sqr;
-
-	//double A_2_0 = u * ((_gamma - 1) * u * u / 2 - H_);
-	//double A_2_1 = H_ - (_gamma - 1) * u * u;
-	//double A_2_2 = _gamma * u;
-
-	//_A_const = Matrix3D(Vector3D{ 0, 1, 0 }, Vector3D{ A_1_0, A_1_1, A_1_2 }, Vector3D{ A_2_0, A_2_1, A_2_2 });
 }
 
 
@@ -132,6 +112,21 @@ void VariableCrossSectionPipeGDE::postProcessing()
 			_p.getElement(0, j) /= _S[j];
 		}
 	}
+}
+
+
+//	Проверка на удовлетворение условий остановки вычислений
+bool VariableCrossSectionPipeGDE::chekStopConditions(size_t n, size_t j, double eps)
+{
+	const double ro_ = _ro.getElement(n, j);
+	const double ro_next = _ro.getElement(n, j + 1);
+
+	const double u_ = _ro.getElement(n, j);
+	const double u_next = _ro.getElement(n, j + 1);
+
+	const double div = (ro_next * u_next - ro_ * u_) / _expanse_grid.h;
+
+	return abs(div) * _S[j] / ro_ < eps;
 }
 
 

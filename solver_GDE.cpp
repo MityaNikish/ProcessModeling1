@@ -40,6 +40,7 @@ void GasDynamicsEquation::solving()
 		for (size_t j = 1; j < _expanse_grid.nodes - 1; ++j)
 		{
 			Vector3D U_star = U_future(n, j);
+			//Vector3D U_star = dU(n, j);
 
 			const double ro_new = U_star[one];
 			const double u_new = U_star[two] / ro_new;
@@ -52,7 +53,7 @@ void GasDynamicsEquation::solving()
 
 			const double ro = _ro.getElement(n, j);
 
-			if (!not_satisfy_condition && (ro_new - ro) / (_time_grid.tau * ro) > 0.0001)
+			if (!not_satisfy_condition && !chekStopConditions(n, j, 1.0e-6))
 			{
 				not_satisfy_condition = !not_satisfy_condition;
 			}
@@ -63,39 +64,6 @@ void GasDynamicsEquation::solving()
 			break;
 		}
 	}
-
-	/*
-	for (size_t n = 0; n < _time_grid.nodes - 1; ++n)
-	{
-		bool not_satisfy_condition = false;
-
-		for (size_t j = 2; j < _expanse_grid.nodes - 2; ++j)
-		{
-			Vector3D U_star = dU(n, j);
-
-			const double ro_new = U_star[one];
-			const double u_new = U_star[two] / ro_new;
-			const double E_new = U_star[three] / ro_new;
-			const double p_new = (E_new - u_new * u_new / 2) * ro_new * (_gamma - 1);
-
-			_ro.getElement(n + 1, j) = ro_new;
-			_u.getElement(n + 1, j) = u_new;
-			_p.getElement(n + 1, j) = p_new;
-
-			const double ro = _ro.getElement(n, j);
-
-			if (!not_satisfy_condition && (ro_new - ro) / (_time_grid.tau * ro) > 0.0001)
-			{
-				not_satisfy_condition = !not_satisfy_condition;
-			}
-		}
-		if (!not_satisfy_condition)
-		{
-			std::cout << n << std::endl;
-			break;
-		}
-	}
-	*/
 
 	postProcessing();
 }
@@ -146,6 +114,21 @@ void GasDynamicsEquation::initConditions()
 void GasDynamicsEquation::postProcessing()
 {
 	return;
+}
+
+
+//	Проверка на удовлетворение условий остановки вычислений
+bool GasDynamicsEquation::chekStopConditions(size_t n, size_t j, double eps)
+{
+	const double ro_ = _ro.getElement(n, j);
+	const double ro_next = _ro.getElement(n, j + 1);
+
+	const double u_ = _ro.getElement(n, j);
+	const double u_next = _ro.getElement(n, j + 1);
+
+	const double div = (ro_next * u_next - ro_ * u_) / _expanse_grid.h;
+
+	return abs(div) / ro_ < eps;
 }
 
 
@@ -258,6 +241,11 @@ Matrix3D GasDynamicsEquation::A(size_t n, size_t j) const
 	double A_2_0 = u * ((_gamma - 1) * u * u / 2 - H_);
 	double A_2_1 = H_ - (_gamma - 1) * u * u;
 	double A_2_2 = _gamma * u;
+
+	//Matrix3D A(Vector3D{ 0, 1, 0 }, Vector3D{ A_1_0, A_1_1, A_1_2 }, Vector3D{ A_2_0, A_2_1, A_2_2 });
+	//if (n == 0 && j == 0) std::cout << A.getMaxElem() << std::endl;;
+
+	//return A;
 
 	return Matrix3D( Vector3D{ 0, 1, 0 }, Vector3D{ A_1_0, A_1_1, A_1_2 }, Vector3D{ A_2_0, A_2_1, A_2_2 } );
 }

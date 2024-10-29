@@ -84,9 +84,9 @@ int main()
 	solver.solving();
 
 	//	Запись результатов в файл 
-	//solver.writeRO(file_path_ro);
-	//solver.writeU(file_path_u);
-	//solver.writeP(file_path_p);
+	solver.writeRO(file_path_ro);
+	solver.writeU(file_path_u);
+	solver.writeP(file_path_p);
 	
 	////	Тестирование некоторых функций
 	//TEST_all();

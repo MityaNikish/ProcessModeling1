@@ -108,6 +108,8 @@ protected:
 	virtual void initConditions();
 	virtual void postProcessing();
 
+	virtual bool chekStopConditions(size_t n, size_t j, double eps);
+
 	double E(size_t n, size_t j) const;
 	double H(size_t n, size_t j) const;
 	
