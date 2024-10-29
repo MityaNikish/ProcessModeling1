@@ -34,30 +34,30 @@ struct TimeGrid
 
 struct StartCondition
 {
-	//	Для плотности
+	//	Начальное условие для плотности
 	std::function<double(double)> start_ro;
-	//	Для скорости
+	//	Начальное условие для скорости
 	std::function<double(double)> start_u;
-	//	Для давления
+	//	Начальное условие для давления
 	std::function<double(double)> start_p;
 };
 
 
 struct BorderlineCondition
 {
-	//	Начальное ГУ для плотности
-	std::function<double(double)> start_borderline_ro;
-	//	Начальное ГУ для скорости
-	std::function<double(double)> start_borderline_u;
-	//	Начальное ГУ для давления
-	std::function<double(double)> start_borderline_p;
+	//	Левое ГУ для плотности
+	std::function<double(double)> left_borderline_ro;
+	//	Левое ГУ для скорости
+	std::function<double(double)> left_borderline_u;
+	//	Левое ГУ для давления
+	std::function<double(double)> left_borderline_p;
 
-	//	Конечное ГУ для плотности
-	std::function<double(double)> end_borderline_ro;
-	//	Конечное ГУ для скорости
-	std::function<double(double)> end_borderline_u;
-	//	Конечное ГУ для давления
-	std::function<double(double)> end_borderline_p;
+	//	Правое ГУ для плотности
+	std::function<double(double)> right_borderline_ro;
+	//	Правое ГУ для скорости
+	std::function<double(double)> right_borderline_u;
+	//	Правое ГУ для давления
+	std::function<double(double)> right_borderline_p;
 };
 
 //	Одношаговая схема Лакс-Вендроффа для моделирования квазиодномерного течения в канале
@@ -86,7 +86,7 @@ protected:
 	//	Показатель адиабаты
 	const double _gamma = 1.4;
 	//	Искусственная вязкость Лапидуса
-	const double _artificial_viscosity = 2.0;
+	const double _artificial_viscosity = 3.0;
 
 public:
 	GasDynamicsEquation(const ExpanseGrid& expanse_grid, const TimeGrid& time_grid, StartCondition& start_condition, BorderlineCondition& borderline_condition);
@@ -108,7 +108,7 @@ protected:
 	virtual void initConditions();
 	virtual void postProcessing();
 
-	virtual	bool chekStopConditions(size_t n, size_t j, double eps);
+	virtual	bool chekStopConditions(size_t n, size_t j, double eps) const;
 
 	double E(size_t n, size_t j) const;
 	double H(size_t n, size_t j) const;

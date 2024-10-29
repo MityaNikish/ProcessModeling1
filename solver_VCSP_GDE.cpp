@@ -40,13 +40,13 @@ void VariableCrossSectionPipeGDE::initConditions()
 
 	for (size_t n = 0; n < 2; ++n)
 	{
-		_ro.getElement(n, 0) = _S[0] * _borderline_condition.start_borderline_ro(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
-		_u.getElement(n, 0) = _borderline_condition.start_borderline_u(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
-		_p.getElement(n, 0) = _S[0] * _borderline_condition.start_borderline_p(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
+		_ro.getElement(n, 0) = _S[0] * _borderline_condition.left_borderline_ro(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
+		_u.getElement(n, 0) = _borderline_condition.left_borderline_u(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
+		_p.getElement(n, 0) = _S[0] * _borderline_condition.left_borderline_p(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
 
-		_ro.getElement(n, _expanse_grid.nodes - 1) = _S[_expanse_grid.nodes - 1] * _borderline_condition.end_borderline_ro(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
-		_u.getElement(n, _expanse_grid.nodes - 1) = _borderline_condition.end_borderline_u(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
-		_p.getElement(n, _expanse_grid.nodes - 1) = _S[_expanse_grid.nodes - 1] * _borderline_condition.end_borderline_p(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
+		_ro.getElement(n, _expanse_grid.nodes - 1) = _S[_expanse_grid.nodes - 1] * _borderline_condition.right_borderline_ro(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
+		_u.getElement(n, _expanse_grid.nodes - 1) = _borderline_condition.right_borderline_u(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
+		_p.getElement(n, _expanse_grid.nodes - 1) = _S[_expanse_grid.nodes - 1] * _borderline_condition.right_borderline_p(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
 	}
 }
 
@@ -64,7 +64,7 @@ void VariableCrossSectionPipeGDE::postProcessing()
 }
 
 //	Проверка на удовлетворение условий остановки вычислений
-bool VariableCrossSectionPipeGDE::chekStopConditions(size_t n, size_t j, double eps)
+bool VariableCrossSectionPipeGDE::chekStopConditions(size_t n, size_t j, double eps) const
 {
 	const double ro_ = _ro.getElement(n, j);
 	const double ro_next = _ro.getElement(n, j + 1);

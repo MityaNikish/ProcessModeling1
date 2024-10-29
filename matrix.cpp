@@ -107,17 +107,38 @@ size_t Matrix::getQuantityCal(void) const noexcept
 	return col_;
 }
 
+/*
+	arr[0..n-1] == arr[0..n-1]
+	arr[-1..-n] == arr[n-1..0]
+
+	arr[a*n..a*n+7..a*n+(n-1)] == arr[0..7..n-1]
+	arr[-a*n-1..-a*n-8..-a*n-n)] == arr[n-1..n-8..0]
+*/
 double& Matrix::getElement(int index_row, int index_col) const
 {
-	size_t relative_index_row = index_row < 0 ? row_ - 1 - index_row % row_ : index_row % row_;
-	size_t relative_index_col = index_col < 0 ? col_ - 1 - index_col % col_ : index_col % col_;
+	if (index_row < 0)
+	{
+		int temp = 1 + static_cast<int>((-1) * (index_row + 1) / row_);
+		index_row += row_ * temp;
+	}
+	else
+	{
+		index_row %= row_;
 
-	//if (index_row >= row_ || index_col >= col_)
-	//{
-	//	throw "Исключение: Обращение к не существующему элементу";
-	//}
+	}
 
-	return ptr_[relative_index_row * col_ + relative_index_col];
+	if (index_col < 0)
+	{
+		int temp = 1 + static_cast<int>((-1) * (index_col + 1) / col_);
+		index_col += col_ * temp;
+	}
+	else
+	{
+		index_col %= col_;
+
+	}
+
+	return ptr_[index_row * col_ + index_col];
 }
 
 Matrix Matrix::getCut(size_t begin_index_row, size_t end_index_row, size_t begin_index_col, size_t end_index_col) const

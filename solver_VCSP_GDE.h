@@ -15,7 +15,7 @@ private:
 	void initConditions() override;
 	void postProcessing() override;
 
-	bool chekStopConditions(size_t n, size_t j, double eps) override;
+	bool chekStopConditions(size_t n, size_t j, double eps) const override;
 
 	Vector3D Q(size_t n, size_t j) const override;
 };
