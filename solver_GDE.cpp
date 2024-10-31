@@ -2,6 +2,9 @@
 #include <fstream>
 //#include <iostream>
 
+#define NDEBUG
+#include <cassert>
+
 namespace 
 {
 	using enum Num;
@@ -14,7 +17,14 @@ namespace
 }
 
 
-GasDynamicsEquation::GasDynamicsEquation(const ExpanseGrid& expanse_grid, const TimeGrid& time_grid, StartCondition& start_condition, BorderlineCondition& borderline_condition) :
+//	Показатель адиабаты
+double GasDynamicsEquation::gamma = 1.4;	//	1.4 - Воздух
+
+//	Искусственная вязкость Лапидуса
+double GasDynamicsEquation::artificial_viscosity = 2.0;	//	2.0 - по умолчанию
+
+
+GasDynamicsEquation::GasDynamicsEquation(const ExpanseGrid& expanse_grid, const TimeGrid& time_grid, StartCondition& start_condition, BorderlineCondition& borderline_condition, const std::vector<double>& S) :
 	_expanse_grid(expanse_grid),
 	_time_grid(time_grid),
 	_start_condition(std::move(start_condition)),
@@ -22,8 +32,30 @@ GasDynamicsEquation::GasDynamicsEquation(const ExpanseGrid& expanse_grid, const 
 	_ro(2, _expanse_grid.nodes),
 	_u(2, _expanse_grid.nodes),
 	_p(2, _expanse_grid.nodes),
+	_S(S),
 	_alpha(_time_grid.tau / _expanse_grid.h)
-{ }
+{ 
+	assert(_S.size() == expanse_grid.nodes && "The cross-section array is not of the right lenght!");
+}
+
+
+GasDynamicsEquation::GasDynamicsEquation(const ExpanseGrid& expanse_grid, const TimeGrid& time_grid, StartCondition& start_condition, BorderlineCondition& borderline_condition, const std::function<double(double)>& S_func) :
+	_expanse_grid(expanse_grid),
+	_time_grid(time_grid),
+	_start_condition(std::move(start_condition)),
+	_borderline_condition(std::move(borderline_condition)),
+	_ro(2, _expanse_grid.nodes),
+	_u(2, _expanse_grid.nodes),
+	_p(2, _expanse_grid.nodes),
+	_S(_expanse_grid.nodes),
+	_alpha(_time_grid.tau / _expanse_grid.h)
+{
+	for (size_t i = 0; i < _expanse_grid.nodes; i++)
+	{
+		(*const_cast<std::vector<double>*>(&_S))[i] = S_func(i * _expanse_grid.h);
+		//std::cout << _S[i] << "\n";
+	}
+}
 
 
 //	Моделирует УГД
@@ -44,7 +76,7 @@ void GasDynamicsEquation::solving()
 			const double ro_new = U_star[one];
 			const double u_new = U_star[two] / ro_new;
 			const double E_new = U_star[three] / ro_new;
-			const double p_new = (E_new - u_new * u_new / 2) * ro_new * (_gamma - 1);
+			const double p_new = (E_new - u_new * u_new / 2) * ro_new * (gamma - 1);
 
 			_ro.getElement(n + 1, j) = ro_new;
 			_u.getElement(n + 1, j) = u_new;
@@ -66,19 +98,19 @@ void GasDynamicsEquation::solving()
 }
 
 
-//	Запиывает данных плотности в файл
+//	Записывает массив данных плотности в файл
 void GasDynamicsEquation::writeRO(const std::filesystem::path& file_path)  const
 {
 	write(file_path, _ro[0].getData(), _expanse_grid.nodes);
 }
 
-//	Запиывает данных скорости в файл
+//	Записывает массив данных скорости в файл
 void GasDynamicsEquation::writeU(const std::filesystem::path& file_path)  const
 {
 	write(file_path, _u[0].getData(), _expanse_grid.nodes);
 }
 
-//	Запиывает данных давления в файл
+//	Записывает массив данных давления в файл
 void GasDynamicsEquation::writeP(const std::filesystem::path& file_path)  const
 {
 	write(file_path, _p[0].getData(), _expanse_grid.nodes);
@@ -90,39 +122,63 @@ void GasDynamicsEquation::initConditions()
 {
 	for (size_t j = 0; j < _expanse_grid.nodes; ++j)
 	{
-		_ro.getElement(0, j) = _start_condition.start_ro(_expanse_grid.starting_point + _expanse_grid.h * static_cast<double>(j));
-		_u.getElement(0, j) = _start_condition.start_u(_expanse_grid.starting_point + _expanse_grid.h * static_cast<double>(j));
-		_p.getElement(0, j) = _start_condition.start_p(_expanse_grid.starting_point + _expanse_grid.h * static_cast<double>(j));
+		_ro.getElement(static_cast<size_t>(0), j) = _S[j] * _start_condition.start_ro(_expanse_grid.starting_point + _expanse_grid.h * static_cast<double>(j));
+		_u.getElement(static_cast<size_t>(0), j) = _start_condition.start_u(_expanse_grid.starting_point + _expanse_grid.h * static_cast<double>(j));
+		_p.getElement(static_cast<size_t>(0), j) = _S[j] * _start_condition.start_p(_expanse_grid.starting_point + _expanse_grid.h * static_cast<double>(j));
 	}
 
 	for (size_t n = 0; n < 2; ++n)
 	{
-		_ro.getElement(n, 0) = _borderline_condition.left_borderline_ro(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
-		_u.getElement(n, 0) = _borderline_condition.left_borderline_u(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
-		_p.getElement(n, 0) = _borderline_condition.left_borderline_p(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
+		_ro.getElement(n, static_cast<size_t>(0)) = _S[0] * _borderline_condition.left_borderline_ro(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
+		_u.getElement(n, static_cast<size_t>(0)) = _borderline_condition.left_borderline_u(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
+		_p.getElement(n, static_cast<size_t>(0)) = _S[0] * _borderline_condition.left_borderline_p(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
 
-		_ro.getElement(n, _expanse_grid.nodes - 1) = _borderline_condition.right_borderline_ro(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
+		_ro.getElement(n, _expanse_grid.nodes - 1) = _S[_expanse_grid.nodes - 1] * _borderline_condition.right_borderline_ro(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
 		_u.getElement(n, _expanse_grid.nodes - 1) = _borderline_condition.right_borderline_u(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
-		_p.getElement(n, _expanse_grid.nodes - 1) = _borderline_condition.right_borderline_p(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
+		_p.getElement(n, _expanse_grid.nodes - 1) = _S[_expanse_grid.nodes - 1] * _borderline_condition.right_borderline_p(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
 	}
 }
 
 //	Проводит послевычеслительные операции
 void GasDynamicsEquation::postProcessing()
 {
-	return;
+	for (size_t n = 0; n < 2; ++n)
+	{
+		for (size_t j = 0; j < _expanse_grid.nodes; ++j)
+		{
+			_ro.getElement(n, j) /= _S[j];
+			_p.getElement(n, j) /= _S[j];
+		}
+	}
 }
 
 
 //	Проверка на удовлетворение условий остановки вычислений
 bool GasDynamicsEquation::chekStopConditions(size_t n, size_t j, double eps) const
 {
+	/*
+	//	Условие остановки по t
 	const double ro_ = _ro.getElement(n, j);
 	const double ro_future = _ro.getElement(n + 1, j);
 
 	const double div = (ro_future - ro_) / _time_grid.tau;
 
-	return abs(div) / ro_ < eps;
+	return abs(div) * _S[j] / ro_ < eps;
+
+
+	//	Условие остановки по x
+	const double ro_ = _ro.getElement(n, j);
+	const double ro_next = _ro.getElement(n, j + 1);
+
+	const double u_ = _ro.getElement(n, j);
+	const double u_next = _ro.getElement(n, j + 1);
+
+	const double div = (ro_next * u_next - ro_ * u_) / _expanse_grid.h;
+
+	return abs(div) * _S[j] / ro_ < eps;
+	*/
+
+	return false;
 }
 
 
@@ -133,7 +189,7 @@ double GasDynamicsEquation::E(size_t n, size_t j) const
 	const double u = _u.getElement(n, j);
 	const double p = _p.getElement(n, j);
 
-	return p / ro / (_gamma - 1) + u * u / 2;
+	return p / ro / (gamma - 1) + u * u / 2;
 }
 
 //	Удельная польная энтальпия
@@ -168,7 +224,7 @@ Vector3D GasDynamicsEquation::dU(size_t n, size_t j) const
 	Vector3D dU_half_pref = dU_pref * pow(dU_pref * dU_pref, 0.5);
 	Vector3D dU_half_next = dU_next * pow(dU_next * dU_next, 0.5);
 
-	return U_future_ + (dU_half_next - dU_half_pref) * (_artificial_viscosity * _alpha);
+	return U_future_ + (dU_half_next - dU_half_pref) * (artificial_viscosity * _alpha);
 }
 
 //	Проводит вычисление консервативной переменной, следующей по временной сетке
@@ -196,8 +252,11 @@ Vector3D GasDynamicsEquation::U_future(size_t n, size_t j) const
 	const Vector3D F_half_pref = (F_pref + F_ - A_half_pref * (F_ - F_pref) * _alpha) / 2;
 	const Vector3D F_half_next = (F_ + F_next - A_half_next * (F_next - F_) * _alpha) / 2;
 
-	//const Vector3D F_half_pref = (F_pref + F_ - A_half_pref * A_half_pref * (U_ - U_pref) * _alpha) / 2;
-	//const Vector3D F_half_next = (F_ + F_next - A_half_next * A_half_next * (U_next - U_) * _alpha) / 2;
+	/*
+	//	Альтернативная формула
+	const Vector3D F_half_pref = (F_pref + F_ - A_half_pref * A_half_pref * (U_ - U_pref) * _alpha) / 2;
+	const Vector3D F_half_next = (F_ + F_next - A_half_next * A_half_next * (U_next - U_) * _alpha) / 2;
+	*/
 
 	return U_ - (F_half_next - F_half_pref) * _alpha - Q(n, j) * _time_grid.tau;
 }
@@ -217,49 +276,65 @@ Vector3D GasDynamicsEquation::F(size_t n, size_t j) const
 //	Источник
 Vector3D GasDynamicsEquation::Q(size_t n, size_t j) const
 {
-	return Vector3D();
+	const double p = _p.getElement(n, j);
+	double dS;
+	if (j == 0)
+	{
+		dS = (_S[2] - _S[0]) / 2 / _expanse_grid.h;
+	}
+	else if (j == _expanse_grid.nodes - 1)
+	{
+		dS = (_S[_expanse_grid.nodes - 1] - _S[_expanse_grid.nodes - 3]) / 2 / _expanse_grid.h;
+	}
+	else
+	{
+		dS = (_S[j + 1] - _S[j - 1]) / 2 / _expanse_grid.h;
+	}
+
+	return Vector3D(0, p / _S[j] * dS, 0);
 }
 
 
 //	Матрица Якоби (A = dF / dU)
 Matrix3D GasDynamicsEquation::A(size_t n, size_t j) const
 {
-	//static Matrix3D A;
-	//static bool create = false;
+	/*
+	//	Константная матрица А
+	static Matrix3D A;
+	static bool create = false;
 
-	//if (!create)
-	//{
-	//	const double u = _u.getElement(0, 0);
+	if (!create)
+	{
+		const double u = _u.getElement(0, 0);
 
-	//	double H_ = H(0, 0);
+		double H_ = H(0, 0);
 
-	//	double A_1_0 = (_gamma - 3) * u * u / 2;
-	//	double A_1_1 = (3 - _gamma) * u;
-	//	double A_1_2 = _gamma - 1;
+		double A_1_0 = (gamma - 3) * u * u / 2;
+		double A_1_1 = (3 - gamma) * u;
+		double A_1_2 = gamma - 1;
 
-	//	double A_2_0 = u * ((_gamma - 1) * u * u / 2 - H_);
-	//	double A_2_1 = H_ - (_gamma - 1) * u * u;
-	//	double A_2_2 = _gamma * u;
+		double A_2_0 = u * ((gamma - 1) * u * u / 2 - H_);
+		double A_2_1 = H_ - (gamma - 1) * u * u;
+		double A_2_2 = gamma * u;
 
-	//	create = !create;
-	//	A = Matrix3D(Vector3D{ 0, 1, 0 }, Vector3D{ A_1_0, A_1_1, A_1_2 }, Vector3D{ A_2_0, A_2_1, A_2_2 });
-	//	std::cout << A.getMaxElem() << std::endl;
-	//}
-
-	//return A;
-
+		create = !create;
+		A = Matrix3D(Vector3D{ 0, 1, 0 }, Vector3D{ A_1_0, A_1_1, A_1_2 }, Vector3D{ A_2_0, A_2_1, A_2_2 });
+		std::cout << A.getMaxElem() << std::endl;
+	}
+	return A;
+	*/
 
 	const double u = _u.getElement(n, j);
 
 	double H_ = H(n, j);
 
-	double A_1_0 = (_gamma - 3) * u * u / 2;
-	double A_1_1 = (3 - _gamma) * u;
-	double A_1_2 = _gamma - 1;
+	double A_1_0 = (gamma - 3) * u * u / 2;
+	double A_1_1 = (3 - gamma) * u;
+	double A_1_2 = gamma - 1;
 
-	double A_2_0 = u * ((_gamma - 1) * u * u / 2 - H_);
-	double A_2_1 = H_ - (_gamma - 1) * u * u;
-	double A_2_2 = _gamma * u;
+	double A_2_0 = u * ((gamma - 1) * u * u / 2 - H_);
+	double A_2_1 = H_ - (gamma - 1) * u * u;
+	double A_2_2 = gamma * u;
 
 	return Matrix3D( Vector3D{ 0, 1, 0 }, Vector3D{ A_1_0, A_1_1, A_1_2 }, Vector3D{ A_2_0, A_2_1, A_2_2 } );
 }

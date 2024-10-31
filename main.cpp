@@ -1,4 +1,4 @@
-﻿#include "solver_VCSP_GDE.h"
+﻿#include "solver_GDE.h"
 #include <fstream>
 #include "test.h"
 
@@ -33,6 +33,7 @@ namespace
 	}
 }
 
+//	Моделирование ударной трубы
 void modeling1()
 {
 	//	Инициализация сетки
@@ -45,6 +46,9 @@ void modeling1()
 	time_grid.starting_point = 0.0;
 	time_grid.ending_point = time_grid.starting_point + time_grid.tau * (time_grid.nodes - 1);	//	2.5
 	////
+
+	//	Функция попреречного сечения трубы
+	std::function<double(double)> S_func = [](double arg) { return 1; };
 
 	//	Начальный условия
 	StartCondition start_condition;
@@ -62,7 +66,7 @@ void modeling1()
 	borderline_condition.right_borderline_p = std::function<double(double)>([](double arg) { return 0.1; });
 
 	//	Моделирование ударной трубы
-	GasDynamicsEquation solver(expanse_grid, time_grid, start_condition, borderline_condition);
+	GasDynamicsEquation solver(expanse_grid, time_grid, start_condition, borderline_condition, S_func);
 	solver.solving();
 
 	//	Запись результатов в файл 
@@ -71,6 +75,7 @@ void modeling1()
 	solver.writeP(file_path_p);
 }
 
+//	Моделирование квазиодномерного течения в канале
 void modeling2()
 {
 	//	Инициализация сетки
@@ -108,7 +113,7 @@ void modeling2()
 	borderline_condition.right_borderline_p = std::function<double(double)>([](double arg) { return 0.8018469; });
 
 	//	Моделирование квазиодномерного течения в канале
-	VariableCrossSectionPipeGDE solver(expanse_grid, time_grid, start_condition, borderline_condition, S_func);
+	GasDynamicsEquation solver(expanse_grid, time_grid, start_condition, borderline_condition, S_func);
 	solver.solving();
 
 	//	Запись результатов в файл 
@@ -116,6 +121,7 @@ void modeling2()
 	solver.writeU(file_path_u);
 	solver.writeP(file_path_p);
 }
+
 
 void modeling3()
 {
@@ -154,7 +160,7 @@ void modeling3()
 	borderline_condition.right_borderline_p = std::function<double(double)>([](double arg) { return 0.1; });
 
 	//	Моделирование квазиодномерного течения в канале
-	VariableCrossSectionPipeGDE solver(expanse_grid, time_grid, start_condition, borderline_condition, S_func);
+	GasDynamicsEquation solver(expanse_grid, time_grid, start_condition, borderline_condition, S_func);
 	solver.solving();
 
 	//	Запись результатов в файл 
@@ -166,20 +172,20 @@ void modeling3()
 
 int main()
 {
+	GasDynamicsEquation::artificial_viscosity = 2.5;
+
 	auto begin = std::chrono::steady_clock::now();
 
-	//	Моделирование ударной трубы
-	//modeling1();
+	modeling1();
 
-	//	Моделирование квазиодномерного течения в канале
-	modeling2();
+	//modeling2();
 
 	//modeling3();
 
 	auto end = std::chrono::steady_clock::now();
 	auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
-
 	std::cout << "\nLead time: " << elapsed_ms.count() << "ms" << std::endl;
+
 
 	////	Тестирование некоторых функций
 	//TEST_all();

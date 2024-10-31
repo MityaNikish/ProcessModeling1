@@ -107,6 +107,8 @@ size_t Matrix::getQuantityCal(void) const noexcept
 	return col_;
 }
 
+
+
 /*
 	arr[0..n-1] == arr[0..n-1]
 	arr[-1..-n] == arr[n-1..0]
@@ -114,23 +116,22 @@ size_t Matrix::getQuantityCal(void) const noexcept
 	arr[a*n..a*n+7..a*n+(n-1)] == arr[0..7..n-1]
 	arr[-a*n-1..-a*n-8..-a*n-n)] == arr[n-1..n-8..0]
 */
-double& Matrix::getElement(int index_row, int index_col) const
+double& Matrix::getElement(int index_row, int index_col)
 {
 	if (index_row < 0)
 	{
 		int temp = 1 + static_cast<int>((-1) * (index_row + 1) / row_);
-		index_row += row_ * temp;
+		index_row += static_cast<int>(row_) * temp;
 	}
 	else
 	{
 		index_row %= row_;
-
 	}
 
 	if (index_col < 0)
 	{
 		int temp = 1 + static_cast<int>((-1) * (index_col + 1) / col_);
-		index_col += col_ * temp;
+		index_col += static_cast<int>(col_) * temp;
 	}
 	else
 	{
@@ -140,6 +141,51 @@ double& Matrix::getElement(int index_row, int index_col) const
 
 	return ptr_[index_row * col_ + index_col];
 }
+
+double Matrix::getElement(int index_row, int index_col) const
+{
+	if (index_row < 0)
+	{
+		int temp = 1 + static_cast<int>((-1) * (index_row + 1) / row_);
+		index_row += static_cast<int>(row_) * temp;
+	}
+	else
+	{
+		index_row %= row_;
+	}
+
+	if (index_col < 0)
+	{
+		int temp = 1 + static_cast<int>((-1) * (index_col + 1) / col_);
+		index_col += static_cast<int>(col_) * temp;
+	}
+	else
+	{
+		index_col %= col_;
+
+	}
+
+	return ptr_[index_row * col_ + index_col];
+}
+
+
+
+/*
+	arr[0..n-1] == arr[0..n-1]
+	arr[a*n..a*n+7..a*n+(n-1)] == arr[0..7..n-1]
+*/
+double& Matrix::getElement(size_t index_row, size_t index_col)
+{
+	return ptr_[(index_row % row_) * col_ + index_col % col_];
+}
+
+
+double Matrix::getElement(size_t index_row, size_t index_col) const
+{
+	return ptr_[(index_row % row_) * col_ + index_col % col_];
+}
+
+
 
 Matrix Matrix::getCut(size_t begin_index_row, size_t end_index_row, size_t begin_index_col, size_t end_index_col) const
 {

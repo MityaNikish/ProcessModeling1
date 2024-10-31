@@ -17,9 +17,6 @@
     <ClCompile Include="matrix.cpp">
       <Filter>container</Filter>
     </ClCompile>
-    <ClCompile Include="solver_VCSP_GDE.cpp">
-      <Filter>VCSP_GDE</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="matrix3D.h">
@@ -37,9 +34,6 @@
     <ClInclude Include="matrix.h">
       <Filter>container</Filter>
     </ClInclude>
-    <ClInclude Include="solver_VCSP_GDE.h">
-      <Filter>VCSP_GDE</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="triviality_geometry">
@@ -53,9 +47,6 @@
     </Filter>
     <Filter Include="container">
       <UniqueIdentifier>{105c1199-69e4-4518-a2a4-b2df24186302}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="VCSP_GDE">
-      <UniqueIdentifier>{a2f30008-0f1b-4fb1-94a6-df6eafcd6689}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

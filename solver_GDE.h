@@ -63,9 +63,9 @@ struct BorderlineCondition
 //	Одношаговая схема Лакс-Вендроффа для моделирования квазиодномерного течения в канале
 
 
-class GasDynamicsEquation
+class GasDynamicsEquation final
 {
-protected:
+private:
 	//	Данные пространственной сетки
 	const ExpanseGrid _expanse_grid;
 	//	Данные времянной сетки
@@ -83,16 +83,21 @@ protected:
 	//	Пространственно-временая плоскость давления
 	Matrix _p;
 
+	//	Площадь поперечного сечения трубы
+	const std::vector<double> _S;
+
 	//	Отношение шага по времяни к шагу по пространству
 	const double _alpha;
 
+public:
 	//	Показатель адиабаты
-	const double _gamma = 1.4;	//	1.4 - Воздух
+	static double gamma;
 	//	Искусственная вязкость Лапидуса
-	const double _artificial_viscosity = 2.5;	//	2.0 - по умолчанию
+	static double artificial_viscosity;
 
 public:
-	GasDynamicsEquation(const ExpanseGrid& expanse_grid, const TimeGrid& time_grid, StartCondition& start_condition, BorderlineCondition& borderline_condition);
+	GasDynamicsEquation(const ExpanseGrid& expanse_grid, const TimeGrid& time_grid, StartCondition& start_condition, BorderlineCondition& borderline_condition, const std::vector<double>& S);
+	GasDynamicsEquation(const ExpanseGrid& expanse_grid, const TimeGrid& time_grid, StartCondition& start_condition, BorderlineCondition& borderline_condition, const std::function<double(double)>& S_func);
 	~GasDynamicsEquation() = default;
 
 	GasDynamicsEquation(const GasDynamicsEquation&) = delete;
@@ -101,17 +106,21 @@ public:
 	GasDynamicsEquation& operator=(const GasDynamicsEquation&) = delete;
 	GasDynamicsEquation& operator=(GasDynamicsEquation&&) = delete;
 
-	virtual void solving();
+	//	Моделирует УГД
+	void solving();
 
+	//	Записывает массив данных плотности в файл
 	void writeRO(const std::filesystem::path& file_path) const;
+	//	Записывает массив данных скорости в файл
 	void writeU(const std::filesystem::path& file_path) const;
+	//	Записывает массив данных давления в файл
 	void writeP(const std::filesystem::path& file_path) const;
 
-protected:
-	virtual void initConditions();
-	virtual void postProcessing();
+private:
+	void initConditions();
+	void postProcessing();
 
-	virtual	bool chekStopConditions(size_t n, size_t j, double eps) const;
+	bool chekStopConditions(size_t n, size_t j, double eps) const;
 
 	double E(size_t n, size_t j) const;
 	double H(size_t n, size_t j) const;
@@ -121,7 +130,7 @@ protected:
 	Vector3D U_future(size_t n, size_t j) const;
 
 	Vector3D F(size_t n, size_t j) const;
-	virtual Vector3D Q(size_t n, size_t j) const;
+	Vector3D Q(size_t n, size_t j) const;
 
 	Matrix3D A(size_t n, size_t j) const;
 };
