@@ -13,9 +13,9 @@ struct ExpanseGrid
 	//	Конечная точка
 	double ending_point = 6.0;
 	//	Шаг по пространству
-	double h = 0.1;
+	double h = 0.01;
 	//	Кол-во узлов сетки
-	size_t nodes = 101;
+	size_t nodes = 1001;
 };
 
 
@@ -26,9 +26,9 @@ struct TimeGrid
 	//	Конечное время
 	double ending_point = 2.5;
 	//	Времяной шаг
-	double tau = 0.01;
+	double tau = 0.0001;
 	//	Кол-во узлов сетки
-	size_t nodes = 2501;
+	size_t nodes = 25001;
 };
 
 
@@ -61,6 +61,8 @@ struct BorderlineCondition
 };
 
 //	Одношаговая схема Лакс-Вендроффа для моделирования квазиодномерного течения в канале
+
+
 class GasDynamicsEquation
 {
 protected:
@@ -83,10 +85,11 @@ protected:
 
 	//	Отношение шага по времяни к шагу по пространству
 	const double _alpha;
+
 	//	Показатель адиабаты
-	const double _gamma = 1.4;
+	const double _gamma = 1.4;	//	1.4 - Воздух
 	//	Искусственная вязкость Лапидуса
-	const double _artificial_viscosity = 3.0;
+	const double _artificial_viscosity = 2.5;	//	2.0 - по умолчанию
 
 public:
 	GasDynamicsEquation(const ExpanseGrid& expanse_grid, const TimeGrid& time_grid, StartCondition& start_condition, BorderlineCondition& borderline_condition);

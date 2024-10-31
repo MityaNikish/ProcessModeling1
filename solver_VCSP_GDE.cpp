@@ -1,8 +1,8 @@
 ﻿#include "solver_VCSP_GDE.h"
 
-//#define NDEBUG
+#define NDEBUG
 #include <cassert>
-#include <iostream>
+//#include <iostream>
 
 
 namespace
@@ -24,6 +24,7 @@ VariableCrossSectionPipeGDE::VariableCrossSectionPipeGDE(const ExpanseGrid& expa
 	for (size_t i = 0; i < _expanse_grid.nodes; i++)
 	{
 		(*const_cast<std::vector<double>*>(&_S))[i] = S_func(i * _expanse_grid.h);
+		//std::cout << _S[i] << "\n";
 	}
 }
 
@@ -53,7 +54,7 @@ void VariableCrossSectionPipeGDE::initConditions()
 //	Проводит послевычеслительные операции
 void VariableCrossSectionPipeGDE::postProcessing()
 {
-	for (size_t n = 0; n < _time_grid.nodes; ++n)
+	for (size_t n = 0; n < 2; ++n)
 	{
 		for (size_t j = 0; j < _expanse_grid.nodes; ++j)
 		{

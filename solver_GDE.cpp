@@ -1,6 +1,6 @@
 ﻿#include "solver_GDE.h"
 #include <fstream>
-#include <iostream>
+//#include <iostream>
 
 namespace 
 {
@@ -34,9 +34,11 @@ void GasDynamicsEquation::solving()
 	for (size_t n = 0; n < _time_grid.nodes - 1; ++n)
 	{
 		bool not_satisfy_condition = false;
+		//for (size_t j = 1; j < _expanse_grid.nodes - 1; ++j)
 		for (size_t j = 1; j < _expanse_grid.nodes - 1; ++j)
 		{
 			//Vector3D U_star = U_future(n, j);
+			//Vector3D U_star = (n == 0 || j == 1 || j == _expanse_grid.nodes - 2) ? U_future(n, j) : dU(n, j);
 			Vector3D U_star = dU(n, j);
 
 			const double ro_new = U_star[one];
@@ -55,7 +57,7 @@ void GasDynamicsEquation::solving()
 		}
 		if (!not_satisfy_condition)
 		{
-			std::cout << n << std::endl;
+			//std::cout << n << std::endl;
 			break;
 		}
 	}
@@ -222,47 +224,42 @@ Vector3D GasDynamicsEquation::Q(size_t n, size_t j) const
 //	Матрица Якоби (A = dF / dU)
 Matrix3D GasDynamicsEquation::A(size_t n, size_t j) const
 {
-	static Matrix3D A;
-	static bool create = false;
+	//static Matrix3D A;
+	//static bool create = false;
 
-	if (!create)
-	{
-		const double u = _u.getElement(0, 0);
-
-		double H_ = H(0, 0);
-
-		double A_1_0 = (_gamma - 3) * u * u / 2;
-		double A_1_1 = (3 - _gamma) * u;
-		double A_1_2 = _gamma - 1;
-
-		double A_2_0 = u * ((_gamma - 1) * u * u / 2 - H_);
-		double A_2_1 = H_ - (_gamma - 1) * u * u;
-		double A_2_2 = _gamma * u;
-
-		create = !create;
-		A = Matrix3D(Vector3D{ 0, 1, 0 }, Vector3D{ A_1_0, A_1_1, A_1_2 }, Vector3D{ A_2_0, A_2_1, A_2_2 });
-	}
-
-	return A;
-
-
-	//const double u = _u.getElement(n, j);
-
-	//double H_ = H(n, j);
-
-	//double A_1_0 = (_gamma - 3) * u * u / 2;
-	//double A_1_1 = (3 - _gamma) * u;
-	//double A_1_2 = _gamma - 1;
-
-	//double A_2_0 = u * ((_gamma - 1) * u * u / 2 - H_);
-	//double A_2_1 = H_ - (_gamma - 1) * u * u;
-	//double A_2_2 = _gamma * u;
-
-	//if (n == 0 && j == 0)
+	//if (!create)
 	//{
-	//	Matrix3D(Vector3D{ 0, 1, 0 }, Vector3D{ A_1_0, A_1_1, A_1_2 }, Vector3D{ A_2_0, A_2_1, A_2_2 });
-	//	std::cout << Matrix3D(Vector3D{ 0, 1, 0 }, Vector3D{ A_1_0, A_1_1, A_1_2 }, Vector3D{ A_2_0, A_2_1, A_2_2 }).getMaxElem();
+	//	const double u = _u.getElement(0, 0);
+
+	//	double H_ = H(0, 0);
+
+	//	double A_1_0 = (_gamma - 3) * u * u / 2;
+	//	double A_1_1 = (3 - _gamma) * u;
+	//	double A_1_2 = _gamma - 1;
+
+	//	double A_2_0 = u * ((_gamma - 1) * u * u / 2 - H_);
+	//	double A_2_1 = H_ - (_gamma - 1) * u * u;
+	//	double A_2_2 = _gamma * u;
+
+	//	create = !create;
+	//	A = Matrix3D(Vector3D{ 0, 1, 0 }, Vector3D{ A_1_0, A_1_1, A_1_2 }, Vector3D{ A_2_0, A_2_1, A_2_2 });
+	//	std::cout << A.getMaxElem() << std::endl;
 	//}
 
-	//return Matrix3D( Vector3D{ 0, 1, 0 }, Vector3D{ A_1_0, A_1_1, A_1_2 }, Vector3D{ A_2_0, A_2_1, A_2_2 } );
+	//return A;
+
+
+	const double u = _u.getElement(n, j);
+
+	double H_ = H(n, j);
+
+	double A_1_0 = (_gamma - 3) * u * u / 2;
+	double A_1_1 = (3 - _gamma) * u;
+	double A_1_2 = _gamma - 1;
+
+	double A_2_0 = u * ((_gamma - 1) * u * u / 2 - H_);
+	double A_2_1 = H_ - (_gamma - 1) * u * u;
+	double A_2_2 = _gamma * u;
+
+	return Matrix3D( Vector3D{ 0, 1, 0 }, Vector3D{ A_1_0, A_1_1, A_1_2 }, Vector3D{ A_2_0, A_2_1, A_2_2 } );
 }
