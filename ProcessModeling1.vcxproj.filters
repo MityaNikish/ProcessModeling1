@@ -17,6 +17,9 @@
     <ClCompile Include="matrix.cpp">
       <Filter>container</Filter>
     </ClCompile>
+    <ClCompile Include="target_GDE.cpp">
+      <Filter>Target</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="matrix3D.h">
@@ -34,6 +37,10 @@
     <ClInclude Include="matrix.h">
       <Filter>container</Filter>
     </ClInclude>
+    <ClInclude Include="target_GDE.h">
+      <Filter>Target</Filter>
+    </ClInclude>
+    <ClInclude Include="types.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="triviality_geometry">
@@ -47,6 +54,9 @@
     </Filter>
     <Filter Include="container">
       <UniqueIdentifier>{105c1199-69e4-4518-a2a4-b2df24186302}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Target">
+      <UniqueIdentifier>{96e288c6-a711-4526-8aae-459356644037}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -5,6 +5,7 @@
 #define NDEBUG
 #include <cassert>
 
+
 namespace 
 {
 	using enum Num;
@@ -114,6 +115,28 @@ void GasDynamicsEquation::writeU(const std::filesystem::path& file_path)  const
 void GasDynamicsEquation::writeP(const std::filesystem::path& file_path)  const
 {
 	write(file_path, _p[0].getData(), _expanse_grid.nodes);
+}
+
+
+//	Вернуть массив данных плотности
+std::vector<double> GasDynamicsEquation::getRO() const
+{
+	Matrix slice = _ro[0];
+	return std::vector<double>(slice.getData(), slice.getData() + _expanse_grid.nodes);
+}
+
+//	Вернуть массив данных скорости
+std::vector<double> GasDynamicsEquation::getU() const
+{
+	Matrix slice = _u[0];
+	return std::vector<double>(slice.getData(), slice.getData() + _expanse_grid.nodes);
+}
+
+//	Вернуть массив данных давления
+std::vector<double> GasDynamicsEquation::getP() const
+{
+	Matrix slice = _p[0];
+	return std::vector<double>(slice.getData(), slice.getData() + _expanse_grid.nodes);
 }
 
 
@@ -239,11 +262,11 @@ Vector3D GasDynamicsEquation::U_future(size_t n, size_t j) const
 	const Vector3D U_next = U(n, j + 1);
 
 	const Matrix3D A_pref = A(n, j - 1);
-	const Matrix3D A_ = A(n, j);
+	const Matrix3D _A = A(n, j);
 	const Matrix3D A_next = A(n, j + 1);
 
-	const Matrix3D A_half_pref = (A_ + A_next) / 2;
-	const Matrix3D A_half_next = (A_pref + A_) / 2;
+	const Matrix3D A_half_pref = (_A + A_next) / 2;
+	const Matrix3D A_half_next = (A_pref + _A) / 2;
 
 	const Vector3D F_pref = F(n, j - 1);
 	const Vector3D F_ = F(n, j);

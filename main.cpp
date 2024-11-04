@@ -1,18 +1,20 @@
 ﻿#include "solver_GDE.h"
-#include <fstream>
+#include "target_GDE.h"
 #include "test.h"
 
 #include <chrono>
+#include <fstream>
 #include <iostream>
 
 
 namespace
 {
 	//	Инициализация путей к рабочим файлам
-	static const std::filesystem::path file_path_ro = std::filesystem::current_path() / "Treatment\\output_ro.raw";
-	static const std::filesystem::path file_path_u = std::filesystem::current_path() / "Treatment\\output_u.raw";
-	static const std::filesystem::path file_path_p = std::filesystem::current_path() / "Treatment\\output_p.raw";
-	static const std::filesystem::path file_path_grid_info = std::filesystem::current_path() / "grid_info.txt";
+	static const std::filesystem::path file_path_ro = std::filesystem::current_path() / "Treatment";
+	static const std::filesystem::path file_path_u = std::filesystem::current_path() / "Treatment";
+	static const std::filesystem::path file_path_p = std::filesystem::current_path() / "Treatment";
+	//static const std::filesystem::path file_path_grid_info = std::filesystem::current_path() / "grid_info.txt";
+	static const std::filesystem::path file_path_grid_info = std::filesystem::current_path() / "Treatment\\grid_info.txt";
 
 	void write_grid_info(const std::filesystem::path& file_path, const ExpanseGrid& expanse_grid, const TimeGrid& time_grid)
 	{
@@ -31,6 +33,43 @@ namespace
 		fin >> time_grid.tau;
 		fin >> time_grid.nodes;
 	}
+}
+
+
+//	Моделирование целевого решения
+void modeling_target()
+{
+	//	Инициализация сетки
+	ExpanseGrid expanse_grid;
+	TimeGrid time_grid;
+	////	Частные параметры сетки
+	read_grid_info(file_path_grid_info, expanse_grid, time_grid);
+	expanse_grid.starting_point = 0.0;
+	expanse_grid.ending_point = expanse_grid.starting_point + expanse_grid.h * (expanse_grid.nodes - 1);
+	////
+
+	//	Функция попреречного сечения трубы
+	const double pos_bottleneck = 0.5;
+	const double value_bottleneck = 0.5;
+	std::function<double(double)> S_func = [pos_bottleneck, value_bottleneck](double arg) {
+		const double part = (1 - arg / pos_bottleneck);
+		return value_bottleneck + (1 - value_bottleneck) * part * part;
+		};
+
+	//	Граничные условия
+	BorderlineCondition borderline_condition;
+	borderline_condition.left_borderline_ro = std::function<double(double)>([](double arg) { return 1.0; });
+	borderline_condition.left_borderline_u = std::function<double(double)>([](double arg) { return 1.0237498; });
+	borderline_condition.left_borderline_p = std::function<double(double)>([](double arg) { return 8.0; });
+
+	//	Моделирование целевого решения
+	TargetGDE solver(expanse_grid, borderline_condition, S_func, 0.75);
+	solver.solving();
+
+	//	Запись результатов в файл 
+	solver.writeRO(file_path_ro / "output_ro.raw");
+	solver.writeU(file_path_u / "output_u.raw");
+	solver.writeP(file_path_p / "output_p.raw");
 }
 
 //	Моделирование ударной трубы
@@ -70,9 +109,9 @@ void modeling1()
 	solver.solving();
 
 	//	Запись результатов в файл 
-	solver.writeRO(file_path_ro);
-	solver.writeU(file_path_u);
-	solver.writeP(file_path_p);
+	solver.writeRO(file_path_ro / "output_ro.raw");
+	solver.writeU(file_path_u / "output_u.raw");
+	solver.writeP(file_path_p / "output_p.raw");
 }
 
 //	Моделирование квазиодномерного течения в канале
@@ -117,9 +156,9 @@ void modeling2()
 	solver.solving();
 
 	//	Запись результатов в файл 
-	solver.writeRO(file_path_ro);
-	solver.writeU(file_path_u);
-	solver.writeP(file_path_p);
+	solver.writeRO(file_path_ro / "output_ro.raw");
+	solver.writeU(file_path_u / "output_u.raw");
+	solver.writeP(file_path_p / "output_p.raw");
 }
 
 
@@ -164,9 +203,9 @@ void modeling3()
 	solver.solving();
 
 	//	Запись результатов в файл 
-	solver.writeRO(file_path_ro);
-	solver.writeU(file_path_u);
-	solver.writeP(file_path_p);
+	solver.writeRO(file_path_ro / "output_ro.raw");
+	solver.writeU(file_path_u / "output_u.raw");
+	solver.writeP(file_path_p / "output_p.raw");
 }
 
 
@@ -176,7 +215,9 @@ int main()
 
 	auto begin = std::chrono::steady_clock::now();
 
-	modeling1();
+	modeling_target();
+
+	//modeling1();
 
 	//modeling2();
 

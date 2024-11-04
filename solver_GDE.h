@@ -1,68 +1,9 @@
 ﻿#pragma once
 #include <functional>
 #include <filesystem>
-#include "matrix.h"
-#include "matrix3D.h"
-#include "vector3D.h"
-
-
-struct ExpanseGrid
-{
-	//	Начальная точка
-	double starting_point = -4.0;
-	//	Конечная точка
-	double ending_point = 6.0;
-	//	Шаг по пространству
-	double h = 0.01;
-	//	Кол-во узлов сетки
-	size_t nodes = 1001;
-};
-
-
-struct TimeGrid
-{
-	//	Стартовое время
-	double starting_point = 0.0;
-	//	Конечное время
-	double ending_point = 2.5;
-	//	Времяной шаг
-	double tau = 0.0001;
-	//	Кол-во узлов сетки
-	size_t nodes = 25001;
-};
-
-
-struct StartCondition
-{
-	//	Начальное условие для плотности
-	std::function<double(double)> start_ro;
-	//	Начальное условие для скорости
-	std::function<double(double)> start_u;
-	//	Начальное условие для давления
-	std::function<double(double)> start_p;
-};
-
-
-struct BorderlineCondition
-{
-	//	Левое ГУ для плотности
-	std::function<double(double)> left_borderline_ro;
-	//	Левое ГУ для скорости
-	std::function<double(double)> left_borderline_u;
-	//	Левое ГУ для давления
-	std::function<double(double)> left_borderline_p;
-
-	//	Правое ГУ для плотности
-	std::function<double(double)> right_borderline_ro;
-	//	Правое ГУ для скорости
-	std::function<double(double)> right_borderline_u;
-	//	Правое ГУ для давления
-	std::function<double(double)> right_borderline_p;
-};
+#include "types.h"
 
 //	Одношаговая схема Лакс-Вендроффа для моделирования квазиодномерного течения в канале
-
-
 class GasDynamicsEquation final
 {
 private:
@@ -115,6 +56,14 @@ public:
 	void writeU(const std::filesystem::path& file_path) const;
 	//	Записывает массив данных давления в файл
 	void writeP(const std::filesystem::path& file_path) const;
+
+	//	Вернуть массив данных плотности
+	std::vector<double> getRO() const;
+	//	Вернуть массив данных скорости
+	std::vector<double> getU() const;
+	//	Вернуть массив данных давления
+	std::vector<double> getP() const;
+
 
 private:
 	void initConditions();

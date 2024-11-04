@@ -136,6 +136,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="matrix3D.cpp" />
+    <ClCompile Include="target_GDE.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="vector3D.cpp" />
     <ClCompile Include="main.cpp" />
@@ -146,7 +147,9 @@
     <ClInclude Include="matrix.h" />
     <ClInclude Include="matrix3D.h" />
     <ClInclude Include="solver_GDE.h" />
+    <ClInclude Include="target_GDE.h" />
     <ClInclude Include="test.h" />
+    <ClInclude Include="types.h" />
     <ClInclude Include="vector3D.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
