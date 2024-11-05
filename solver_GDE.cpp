@@ -187,7 +187,7 @@ bool GasDynamicsEquation::chekStopConditions(size_t n, size_t j, double eps) con
 	const double div = (ro_future - ro_) / _time_grid.tau;
 
 	return abs(div) * _S[j] / ro_ < eps;
-
+	*/
 
 	//	Условие остановки по x
 	const double ro_ = _ro.getElement(n, j);
@@ -199,9 +199,9 @@ bool GasDynamicsEquation::chekStopConditions(size_t n, size_t j, double eps) con
 	const double div = (ro_next * u_next - ro_ * u_) / _expanse_grid.h;
 
 	return abs(div) * _S[j] / ro_ < eps;
-	*/
+	
 
-	return false;
+	//return false;
 }
 
 
@@ -281,7 +281,7 @@ Vector3D GasDynamicsEquation::U_future(size_t n, size_t j) const
 	const Vector3D F_half_next = (F_ + F_next - A_half_next * A_half_next * (U_next - U_) * _alpha) / 2;
 	*/
 
-	return U_ - (F_half_next - F_half_pref) * _alpha - Q(n, j) * _time_grid.tau;
+	return U_ - (F_half_next - F_half_pref) * _alpha + Q(n, j) * _time_grid.tau;
 }
 
 //	Значение потока
@@ -321,7 +321,7 @@ Vector3D GasDynamicsEquation::Q(size_t n, size_t j) const
 //	Матрица Якоби (A = dF / dU)
 Matrix3D GasDynamicsEquation::A(size_t n, size_t j) const
 {
-	/*
+	
 	//	Константная матрица А
 	static Matrix3D A;
 	static bool create = false;
@@ -342,22 +342,22 @@ Matrix3D GasDynamicsEquation::A(size_t n, size_t j) const
 
 		create = !create;
 		A = Matrix3D(Vector3D{ 0, 1, 0 }, Vector3D{ A_1_0, A_1_1, A_1_2 }, Vector3D{ A_2_0, A_2_1, A_2_2 });
-		std::cout << A.getMaxElem() << std::endl;
+		//std::cout << A.getMaxElem() << std::endl;
 	}
 	return A;
-	*/
+	
 
-	const double u = _u.getElement(n, j);
+	//const double u = _u.getElement(n, j);
 
-	double H_ = H(n, j);
+	//double H_ = H(n, j);
 
-	double A_1_0 = (gamma - 3) * u * u / 2;
-	double A_1_1 = (3 - gamma) * u;
-	double A_1_2 = gamma - 1;
+	//double A_1_0 = (gamma - 3) * u * u / 2;
+	//double A_1_1 = (3 - gamma) * u;
+	//double A_1_2 = gamma - 1;
 
-	double A_2_0 = u * ((gamma - 1) * u * u / 2 - H_);
-	double A_2_1 = H_ - (gamma - 1) * u * u;
-	double A_2_2 = gamma * u;
+	//double A_2_0 = u * ((gamma - 1) * u * u / 2 - H_);
+	//double A_2_1 = H_ - (gamma - 1) * u * u;
+	//double A_2_2 = gamma * u;
 
-	return Matrix3D( Vector3D{ 0, 1, 0 }, Vector3D{ A_1_0, A_1_1, A_1_2 }, Vector3D{ A_2_0, A_2_1, A_2_2 } );
+	//return Matrix3D( Vector3D{ 0, 1, 0 }, Vector3D{ A_1_0, A_1_1, A_1_2 }, Vector3D{ A_2_0, A_2_1, A_2_2 } );
 }

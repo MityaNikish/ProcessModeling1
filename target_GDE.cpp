@@ -74,7 +74,8 @@ void TargetGDE::solving()
 {
 	const double p0 = _borderline_condition.left_borderline_p(_expanse_grid.starting_point);
 	const double ro0 = _borderline_condition.left_borderline_ro(_expanse_grid.starting_point);
-	const double u0 = pow(_gamma * p0 / ro0, 0.5);
+	const double u0 = _borderline_condition.left_borderline_u(_expanse_grid.starting_point);
+	//const double u0 = pow(_gamma * p0 / ro0, 0.5);
 
 	const double S_crit = _S_crit;
 	const double S_0 = _S[0];
@@ -112,8 +113,8 @@ void TargetGDE::solving()
 
 		const double Q = (1 + (_gamma - 1) / 2 * M_0 * M_0) / (1 + (_gamma - 1) / 2 * M * M);
 
-		_data[i].ro = ro0 * pow(Q, 1 / (_gamma - 1));
 		_data[i].p = p0 * pow(Q, _gamma / (_gamma - 1));
+		_data[i].ro = ro0 * pow(Q, 1 / (_gamma - 1));
 		_data[i].u = u0 * pow(Q, 0.5) * M / M_0;
 	}
 
@@ -124,8 +125,8 @@ void TargetGDE::solving()
 	const double M_L = left.u / pow(_gamma * left.p / left.ro, 0.5);
 
 	_data[index_s] = {
-		left.ro * (_gamma + 1) / 2 * M_L * M_L / (1 + (_gamma - 1) / 2 * M_L * M_L),
 		left.p * (2 * M_L * M_L * _gamma / (_gamma + 1) - (_gamma - 1) / (_gamma + 1)),
+		left.ro * ((_gamma + 1) / 2 * M_L * M_L) / (1 + (_gamma - 1) / 2 * M_L * M_L),
 		left.u * (_gamma - 1) / (_gamma + 1) * (1 + 2 / (_gamma - 1) / (M_L * M_L))
 	};
 	Values right = _data[index_s];
@@ -146,8 +147,8 @@ void TargetGDE::solving()
 		const double M = halfCutMethod(func, 0.0001, 1, epsilon, cycle_lock);
 		const double Q = (1 + (_gamma - 1) / 2 * M_R * M_R) / (1 + (_gamma - 1) / 2 * M * M);
 
-		_data[i].ro = right.ro * pow(Q, 1 / (_gamma - 1));
 		_data[i].p = right.p * pow(Q, _gamma / (_gamma - 1));
+		_data[i].ro = right.ro * pow(Q, 1 / (_gamma - 1));
 		_data[i].u = right.u * pow(Q, 0.5) * M / M_R;
 	}
 	return;

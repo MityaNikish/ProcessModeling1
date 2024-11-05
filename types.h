@@ -5,27 +5,27 @@
 
 struct ExpanseGrid
 {
-	//	Начальная точка
-	double starting_point = -4.0;
-	//	Конечная точка
-	double ending_point = 6.0;
 	//	Шаг по пространству
 	double h = 0.01;
 	//	Кол-во узлов сетки
 	size_t nodes = 1001;
+	//	Начальная точка
+	double starting_point = -4.0;
+	//	Конечная точка
+	double ending_point = 6.0;
 };
 
 
 struct TimeGrid
 {
-	//	Стартовое время
-	double starting_point = 0.0;
-	//	Конечное время
-	double ending_point = 2.5;
 	//	Времяной шаг
 	double tau = 0.0001;
 	//	Кол-во узлов сетки
 	size_t nodes = 25001;
+	//	Стартовое время
+	double starting_point = 0.0;
+	//	Конечное время
+	double ending_point = 2.5;
 };
 
 
