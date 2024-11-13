@@ -43,16 +43,16 @@ struct StartCondition
 struct BorderlineCondition
 {
 	//	Левое ГУ для плотности
-	std::function<double(double)> left_borderline_ro;
+	double left_borderline_ro;
 	//	Левое ГУ для скорости
-	std::function<double(double)> left_borderline_u;
+	double left_borderline_u;
 	//	Левое ГУ для давления
-	std::function<double(double)> left_borderline_p;
+	double left_borderline_p;
 
 	//	Правое ГУ для плотности
-	std::function<double(double)> right_borderline_ro;
+	double right_borderline_ro;
 	//	Правое ГУ для скорости
-	std::function<double(double)> right_borderline_u;
+	double right_borderline_u;
 	//	Правое ГУ для давления
-	std::function<double(double)> right_borderline_p;
+	double right_borderline_p;
 };

@@ -72,9 +72,9 @@ TargetGDE::TargetGDE(const ExpanseGrid& expanse_grid, const BorderlineCondition&
 //	Моделирует УГД
 void TargetGDE::solving()
 {
-	const double p0 = _borderline_condition.left_borderline_p(_expanse_grid.starting_point);
-	const double ro0 = _borderline_condition.left_borderline_ro(_expanse_grid.starting_point);
-	const double u0 = _borderline_condition.left_borderline_u(_expanse_grid.starting_point);
+	const double p0 = _borderline_condition.left_borderline_p;
+	const double ro0 = _borderline_condition.left_borderline_ro;
+	const double u0 = _borderline_condition.left_borderline_u;
 	//const double u0 = pow(_gamma * p0 / ro0, 0.5);
 
 	const double S_crit = _S_crit;

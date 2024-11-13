@@ -1,6 +1,6 @@
 ﻿#include "solver_GDE.h"
 #include <fstream>
-//#include <iostream>
+#include <iostream>
 
 #define NDEBUG
 #include <cassert>
@@ -67,11 +67,8 @@ void GasDynamicsEquation::solving()
 	for (size_t n = 0; n < _time_grid.nodes - 1; ++n)
 	{
 		bool not_satisfy_condition = false;
-		//for (size_t j = 1; j < _expanse_grid.nodes - 1; ++j)
 		for (size_t j = 1; j < _expanse_grid.nodes - 1; ++j)
 		{
-			//Vector3D U_star = U_future(n, j);
-			//Vector3D U_star = (n == 0 || j == 1 || j == _expanse_grid.nodes - 2) ? U_future(n, j) : dU(n, j);
 			Vector3D U_star = dU(n, j);
 
 			const double ro_new = U_star[one];
@@ -83,14 +80,15 @@ void GasDynamicsEquation::solving()
 			_u.getElement(n + 1, j) = u_new;
 			_p.getElement(n + 1, j) = p_new;
 
-			if (!not_satisfy_condition && !chekStopConditions(n, j, 1.0e-6))
+			if (!not_satisfy_condition && !chekStopConditions(n, j, 1.0e-1))
 			{
 				not_satisfy_condition = !not_satisfy_condition;
 			}
+
 		}
 		if (!not_satisfy_condition)
 		{
-			//std::cout << n << std::endl;
+			std::cout << n << std::endl;
 			break;
 		}
 	}
@@ -152,13 +150,13 @@ void GasDynamicsEquation::initConditions()
 
 	for (size_t n = 0; n < 2; ++n)
 	{
-		_ro.getElement(n, static_cast<size_t>(0)) = _S[0] * _borderline_condition.left_borderline_ro(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
-		_u.getElement(n, static_cast<size_t>(0)) = _borderline_condition.left_borderline_u(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
-		_p.getElement(n, static_cast<size_t>(0)) = _S[0] * _borderline_condition.left_borderline_p(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
+		_ro.getElement(n, static_cast<size_t>(0)) = _S[0] * _borderline_condition.left_borderline_ro;
+		_u.getElement(n, static_cast<size_t>(0)) = _borderline_condition.left_borderline_u;
+		_p.getElement(n, static_cast<size_t>(0)) = _S[0] * _borderline_condition.left_borderline_p;
 
-		_ro.getElement(n, _expanse_grid.nodes - 1) = _S[_expanse_grid.nodes - 1] * _borderline_condition.right_borderline_ro(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
-		_u.getElement(n, _expanse_grid.nodes - 1) = _borderline_condition.right_borderline_u(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
-		_p.getElement(n, _expanse_grid.nodes - 1) = _S[_expanse_grid.nodes - 1] * _borderline_condition.right_borderline_p(_time_grid.starting_point + _time_grid.tau * static_cast<double>(n));
+		_ro.getElement(n, _expanse_grid.nodes - 1) = _S[_expanse_grid.nodes - 1] * _borderline_condition.right_borderline_ro;
+		_u.getElement(n, _expanse_grid.nodes - 1) = _borderline_condition.right_borderline_u;
+		_p.getElement(n, _expanse_grid.nodes - 1) = _S[_expanse_grid.nodes - 1] * _borderline_condition.right_borderline_p;
 	}
 }
 
@@ -200,7 +198,6 @@ bool GasDynamicsEquation::chekStopConditions(size_t n, size_t j, double eps) con
 
 	return abs(div) * _S[j] / ro_ < eps;
 	
-
 	//return false;
 }
 
@@ -234,18 +231,25 @@ Vector3D GasDynamicsEquation::U(size_t n, size_t j) const
 	return Vector3D (ro, ro * u, ro * E(n, j));
 }
 
-//	beta: Борьба с осциляциями при помощи искусственной вязкости
+//	Борьба с осциляциями при помощи искусственной вязкости
 Vector3D GasDynamicsEquation::dU(size_t n, size_t j) const
 {
+	//	Костыль
+	Vector3D U_future_pref = j == 1 ? U_future(n, 1) : U_future(n, j - 1);
+	Vector3D U_future_ = U_future(n, j);
+	Vector3D U_future_next = j == _expanse_grid.nodes - 2 ? U_future(n, _expanse_grid.nodes - 2) : U_future(n, j + 1);
+
+	/*
 	Vector3D U_future_pref = U_future(n, j - 1);
 	Vector3D U_future_ = U_future(n, j);
-	Vector3D U_future_next = U_future(n, j + 1);
+	Vector3D U_future_next = j == U_future(n, j + 1);
+	*/
 	
 	Vector3D dU_pref = U_future_ - U_future_pref;
 	Vector3D dU_next = U_future_next - U_future_;
 
-	Vector3D dU_half_pref = dU_pref * pow(dU_pref * dU_pref, 0.5);
-	Vector3D dU_half_next = dU_next * pow(dU_next * dU_next, 0.5);
+	Vector3D dU_half_pref = dU_pref * dU_pref.normL2();
+	Vector3D dU_half_next = dU_next * dU_next.normL2();
 
 	return U_future_ + (dU_half_next - dU_half_pref) * (artificial_viscosity * _alpha);
 }
@@ -303,11 +307,11 @@ Vector3D GasDynamicsEquation::Q(size_t n, size_t j) const
 	double dS;
 	if (j == 0)
 	{
-		dS = (_S[2] - _S[0]) / 2 / _expanse_grid.h;
+		dS = (_S[1] - _S[0]) / _expanse_grid.h;
 	}
 	else if (j == _expanse_grid.nodes - 1)
 	{
-		dS = (_S[_expanse_grid.nodes - 1] - _S[_expanse_grid.nodes - 3]) / 2 / _expanse_grid.h;
+		dS = (_S[_expanse_grid.nodes - 1] - _S[_expanse_grid.nodes - 2]) / _expanse_grid.h;
 	}
 	else
 	{
@@ -322,42 +326,42 @@ Vector3D GasDynamicsEquation::Q(size_t n, size_t j) const
 Matrix3D GasDynamicsEquation::A(size_t n, size_t j) const
 {
 	
-	//	Константная матрица А
-	static Matrix3D A;
-	static bool create = false;
+	////	Константная матрица А
+	//static Matrix3D A;
+	//static bool create = false;
 
-	if (!create)
-	{
-		const double u = _u.getElement(0, 0);
+	//if (!create)
+	//{
+	//	const double u = _u.getElement(0, 0);
 
-		double H_ = H(0, 0);
+	//	double H_ = H(0, 0);
 
-		double A_1_0 = (gamma - 3) * u * u / 2;
-		double A_1_1 = (3 - gamma) * u;
-		double A_1_2 = gamma - 1;
+	//	double A_1_0 = (gamma - 3) * u * u / 2;
+	//	double A_1_1 = (3 - gamma) * u;
+	//	double A_1_2 = gamma - 1;
 
-		double A_2_0 = u * ((gamma - 1) * u * u / 2 - H_);
-		double A_2_1 = H_ - (gamma - 1) * u * u;
-		double A_2_2 = gamma * u;
+	//	double A_2_0 = u * ((gamma - 1) * u * u / 2 - H_);
+	//	double A_2_1 = H_ - (gamma - 1) * u * u;
+	//	double A_2_2 = gamma * u;
 
-		create = !create;
-		A = Matrix3D(Vector3D{ 0, 1, 0 }, Vector3D{ A_1_0, A_1_1, A_1_2 }, Vector3D{ A_2_0, A_2_1, A_2_2 });
-		//std::cout << A.getMaxElem() << std::endl;
-	}
-	return A;
-	
+	//	create = !create;
+	//	A = Matrix3D(Vector3D{ 0, 1, 0 }, Vector3D{ A_1_0, A_1_1, A_1_2 }, Vector3D{ A_2_0, A_2_1, A_2_2 });
+	//	//std::cout << A.getMaxElem() << std::endl;
+	//}
+	//return A;
+	//
 
-	//const double u = _u.getElement(n, j);
+	const double u = _u.getElement(n, j);
 
-	//double H_ = H(n, j);
+	double H_ = H(n, j);
 
-	//double A_1_0 = (gamma - 3) * u * u / 2;
-	//double A_1_1 = (3 - gamma) * u;
-	//double A_1_2 = gamma - 1;
+	double A_1_0 = (gamma - 3) * u * u / 2;
+	double A_1_1 = (3 - gamma) * u;
+	double A_1_2 = gamma - 1;
 
-	//double A_2_0 = u * ((gamma - 1) * u * u / 2 - H_);
-	//double A_2_1 = H_ - (gamma - 1) * u * u;
-	//double A_2_2 = gamma * u;
+	double A_2_0 = u * ((gamma - 1) * u * u / 2 - H_);
+	double A_2_1 = H_ - (gamma - 1) * u * u;
+	double A_2_2 = gamma * u;
 
-	//return Matrix3D( Vector3D{ 0, 1, 0 }, Vector3D{ A_1_0, A_1_1, A_1_2 }, Vector3D{ A_2_0, A_2_1, A_2_2 } );
+	return Matrix3D( Vector3D{ 0, 1, 0 }, Vector3D{ A_1_0, A_1_1, A_1_2 }, Vector3D{ A_2_0, A_2_1, A_2_2 } );
 }

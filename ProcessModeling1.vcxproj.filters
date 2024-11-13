@@ -59,4 +59,7 @@
       <UniqueIdentifier>{96e288c6-a711-4526-8aae-459356644037}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="Treatment\grid_info.txt" />
+  </ItemGroup>
 </Project>
