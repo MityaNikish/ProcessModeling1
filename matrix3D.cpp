@@ -1,4 +1,5 @@
 ﻿#include "matrix3D.h"
+#include <cfloat>
 
 namespace
 {
@@ -63,4 +64,18 @@ Vector3D& Matrix3D::operator[](Num index)
 Vector3D Matrix3D::operator[](Num index) const
 {
 	return data_[static_cast<size_t>(index)];
+}
+
+double Matrix3D::getMaxElem()
+{
+	double max_element = DBL_MIN;
+	for (size_t i = 0; i < 3; i++)
+	{
+		for (size_t j = 0; j < 3; j++)
+		{
+			double element = (*this)[static_cast<Num>(i)][static_cast<Num>(j)];
+			if (element > max_element) max_element = element;
+		}
+	}
+	return max_element;
 }

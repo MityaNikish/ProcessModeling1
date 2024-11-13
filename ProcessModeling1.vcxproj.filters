@@ -17,8 +17,8 @@
     <ClCompile Include="matrix.cpp">
       <Filter>container</Filter>
     </ClCompile>
-    <ClCompile Include="solver_VCSP_GDE.cpp">
-      <Filter>VCSP_GDE</Filter>
+    <ClCompile Include="target_GDE.cpp">
+      <Filter>Target</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -37,9 +37,10 @@
     <ClInclude Include="matrix.h">
       <Filter>container</Filter>
     </ClInclude>
-    <ClInclude Include="solver_VCSP_GDE.h">
-      <Filter>VCSP_GDE</Filter>
+    <ClInclude Include="target_GDE.h">
+      <Filter>Target</Filter>
     </ClInclude>
+    <ClInclude Include="types.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="triviality_geometry">
@@ -54,8 +55,11 @@
     <Filter Include="container">
       <UniqueIdentifier>{105c1199-69e4-4518-a2a4-b2df24186302}</UniqueIdentifier>
     </Filter>
-    <Filter Include="VCSP_GDE">
-      <UniqueIdentifier>{a2f30008-0f1b-4fb1-94a6-df6eafcd6689}</UniqueIdentifier>
+    <Filter Include="Target">
+      <UniqueIdentifier>{96e288c6-a711-4526-8aae-459356644037}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Treatment\grid_info.txt" />
   </ItemGroup>
 </Project>

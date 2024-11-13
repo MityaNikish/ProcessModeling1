@@ -16,4 +16,6 @@ public:
 	Matrix3D operator*(const Matrix3D& other) const;
 	Vector3D& operator[](Num index);
 	Vector3D operator[](Num index) const;
+
+	double getMaxElem();
 };

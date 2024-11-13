@@ -1,4 +1,5 @@
 ﻿#include "vector3D.h"
+#include "cmath"
 
 Vector3D::Vector3D()
 {
@@ -47,4 +48,9 @@ double& Vector3D::operator[](const Num index)
 double Vector3D::operator[](const Num index) const
 {
 	return data_[static_cast<size_t>(index)];
+}
+
+double Vector3D::normL2() const
+{
+	return pow(abs(*this * *this), 0.5);
 }

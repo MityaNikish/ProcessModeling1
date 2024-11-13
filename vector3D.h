@@ -20,4 +20,6 @@ public:
 	double operator*(const Vector3D& other) const;
 	double& operator[](Num index);
 	double operator[](Num index) const;
+
+	double normL2() const;
 };
