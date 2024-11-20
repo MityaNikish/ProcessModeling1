@@ -17,3 +17,6 @@ void discrepancy_continuous_quasi1D_flow();
 
 //	Вычисление невязки для решения разрывного квазиодномерного течения в канале
 void discrepancy_discontinuous_quasi1D_flow(); 
+
+//	Вычисление разницы течений
+void diff_flow();
