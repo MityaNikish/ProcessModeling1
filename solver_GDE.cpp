@@ -28,8 +28,8 @@ double GasDynamicsEquation::artificial_viscosity = 2.0;	//	2.0 - по умолч
 GasDynamicsEquation::GasDynamicsEquation(const ExpanseGrid& expanse_grid, const TimeGrid& time_grid, StartCondition& start_condition, BorderlineCondition& borderline_condition, const std::vector<double>& S) :
 	_expanse_grid(expanse_grid),
 	_time_grid(time_grid),
-	_start_condition(std::move(start_condition)),
-	_borderline_condition(std::move(borderline_condition)),
+	_start_condition(start_condition),
+	_borderline_condition(borderline_condition),
 	_ro(2, _expanse_grid.nodes),
 	_u(2, _expanse_grid.nodes),
 	_p(2, _expanse_grid.nodes),
@@ -43,8 +43,8 @@ GasDynamicsEquation::GasDynamicsEquation(const ExpanseGrid& expanse_grid, const 
 GasDynamicsEquation::GasDynamicsEquation(const ExpanseGrid& expanse_grid, const TimeGrid& time_grid, StartCondition& start_condition, BorderlineCondition& borderline_condition, const std::function<double(double)>& S_func) :
 	_expanse_grid(expanse_grid),
 	_time_grid(time_grid),
-	_start_condition(std::move(start_condition)),
-	_borderline_condition(std::move(borderline_condition)),
+	_start_condition(start_condition),
+	_borderline_condition(borderline_condition),
 	_ro(2, _expanse_grid.nodes),
 	_u(2, _expanse_grid.nodes),
 	_p(2, _expanse_grid.nodes),
