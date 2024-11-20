@@ -12,13 +12,11 @@ void main()
 
 	//modeling2();
 
-	//modeling3();
+	modeling3();
 
 	//discrepancy_continuous_quasi1D_flow();
 
 	//discrepancy_discontinuous_quasi1D_flow();
-
-	diff_flow();
 
 	auto end = std::chrono::steady_clock::now();
 	auto elapsed_ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
