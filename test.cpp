@@ -94,6 +94,12 @@ namespace
 		std::ofstream fout(file_path, std::ios::trunc | std::ios::binary);
 		fout.write((char*)arr, sizeof(double) * size);
 	}
+
+	void read_arr(std::filesystem::path file_path, double* arr, size_t size)
+	{
+		std::ifstream fin(file_path, std::ios::binary);
+		fin.read((char*)arr, sizeof(double) * size);
+	}
 }
 
 
@@ -406,4 +412,28 @@ void discrepancy_discontinuous_quasi1D_flow()
 	write_arr(file_path_ro / "discrep_ro.raw", discrepancy_ro.data(), discrepancy_ro.size());
 	write_arr(file_path_u / "discrep_u.raw", discrepancy_u.data(), discrepancy_u.size());
 	write_arr(file_path_p / "discrep_p.raw", discrepancy_p.data(), discrepancy_p.size());
+}
+
+//	Вычисление разницы течений
+void diff_flow()
+{
+	ExpanseGrid expanse_grid{ 0.001, 1001, 0.0, 0.0 };
+	TimeGrid time_grid{ 0.00001, 100000, 0.0, 0.0 };
+
+	std::vector<double> GDE_RO(expanse_grid.nodes);	read_arr(".\\Comparison\\ro.raw", GDE_RO.data(), GDE_RO.size());
+	std::vector<double> GDE_U(expanse_grid.nodes);	read_arr(".\\Comparison\\u.raw", GDE_U.data(), GDE_U.size());
+	std::vector<double> GDE_P(expanse_grid.nodes);	read_arr(".\\Comparison\\p.raw", GDE_P.data(), GDE_P.size());
+
+	std::vector<double> GDE_TVD_RO(expanse_grid.nodes);	read_arr(".\\Comparison\\ro_tvd.raw", GDE_TVD_RO.data(), GDE_TVD_RO.size());
+	std::vector<double> GDE_TVD_U(expanse_grid.nodes);	read_arr(".\\Comparison\\u_tvd.raw", GDE_TVD_U.data(), GDE_TVD_U.size());
+	std::vector<double> GDE_TVD_P(expanse_grid.nodes);	read_arr(".\\Comparison\\p_tvd.raw", GDE_TVD_P.data(), GDE_TVD_P.size());
+
+	//	Вычисление невязки
+	std::vector<double> difference_ro = abs_vec(GDE_RO - GDE_TVD_RO);
+	std::vector<double> difference_u = abs_vec(GDE_U - GDE_TVD_U);
+	std::vector<double> difference_p = abs_vec(GDE_P - GDE_TVD_P);
+
+	write_arr(".\\Comparison\\diff_ro.raw", difference_ro.data(), difference_ro.size());
+	write_arr(".\\Comparison\\diff_u.raw", difference_u.data(), difference_u.size());
+	write_arr(".\\Comparison\\diff_p.raw", difference_p.data(), difference_p.size());
 }
